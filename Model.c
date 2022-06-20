@@ -1,6 +1,5 @@
 #include <c_api.h>
 
-// TODO: structure param args possibly with builders for different use cases
 // BEGIN CLASS//
 struct Model {
   TF_Graph* graph;
@@ -54,7 +53,7 @@ static Model* build() {
 /// Builds from input to output
 /// establishing edges eagerly. inserts the given operation in the current graph
 /// and returns the operation's handle. attaches all given Outputs to the
-/// operation's input edges.
+/// operation's input edges. User is responsible for freeing the memory passed in.
 /// </summary>
 /// <param name="model"></param>
 /// <param name="graph_op_name"></param>
@@ -127,7 +126,7 @@ static TF_Operation* add_op(Model* model, char* op_name_g, char* op_name,
 /// <param name="length"></param>
 /// <param name="dtype"></param>
 /// <returns></returns>
-static TF_Operation* Placeholder(Model* model, char* op_name,
+static TF_Operation* placeholder(Model* model, char* op_name,
                                  const int64_t* dims, int length,
                                  TF_DataType dtype) {
   TF_OperationDescription* op =
@@ -144,22 +143,7 @@ static TF_Operation* Placeholder(Model* model, char* op_name,
 
 // TODO: new_Constant //return a constant to be passed into an op
 // TODO: new_Variable //return a variable to be passed into an op
-// TENSOR CREATION//
-// TF_Tensor** InputValues = (TF_Tensor**)malloc(sizeof(TF_Tensor*) *
-// NumInputs); printf("Allocated data for inputs and outputs\n"); int ndimsi1 =
-// 1; int64_t dimsi1[] = {1}; float data1[] = {1.0f}; int ndata1 =
-// sizeof(float); TF_Tensor* float_tensor = TF_NewTensor(TF_FLOAT, dimsi1,
-// ndimsi1, data1, ndata1,
-//                                       &NoOpDeallocator, NULL);
-// a function that does the above returning a TF_Tensor*
-static TF_Tensor* Tensor(TF_DataType dtype, const int64_t* dims, int length,
-                             void* data, size_t type_size) {
-  TF_Tensor* tensor = TF_AllocateTensor(dtype, dims, length, type_size);
-  memcpy(TF_TensorData(tensor), data, type_size);
-  return tensor;
-}
 
-// MANUAL EDGE CREATION//
 /// <summary>
 /// Retrieves the Operation from the graph by name and inserts the given input.
 /// you shouldnt have to call this if building with the add_op sequential
@@ -220,8 +204,26 @@ static TF_Output* get_op_output_list(Model* model, char* graph_op_name,
   }
   return res;
 }
+//create a tensor and return it
+//essentially we are making a function extraction of the following:
+//int ndimsi1 = 1;
+//int64_t dimsi1[] = { 1 };
+//float* data1 = malloc(sizeof(float));
+//*data1 = 1.0f;
+//int ndata1 = sizeof(float);
+//TF_Tensor* float_tensor = TF_AllocateTensor(TF_FLOAT, dimsi1, ndimsi1, ndata1);
+////get the data pointer from the tensor
+//float* data1_ptr = (float*)TF_TensorData(float_tensor);
+//data1_ptr[0] = 1.0f;
+static TF_Tensor* new_tensor(TF_DataType dtype, int ndims, int64_t* dims, float* data, int ndata) {
+	TF_Tensor* tensor = TF_AllocateTensor(dtype, dims, ndims, ndata);
+	float* data_ptr = (float*)TF_TensorData(tensor);
+	for (int i = 0; i < ndata; i++) {
+		data_ptr[i] = data[i];
+	}
+	return tensor;
+}
 
-// DEALLOCATION//
 /// <summary>
 /// Cleanup routine for everything allocated by Model
 /// if theres a leak something is missing here.
