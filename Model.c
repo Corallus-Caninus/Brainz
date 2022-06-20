@@ -206,15 +206,6 @@ static TF_Output* get_op_output_list(Model* model, char* graph_op_name,
 }
 //create a tensor and return it
 //essentially we are making a function extraction of the following:
-//int ndimsi1 = 1;
-//int64_t dimsi1[] = { 1 };
-//float* data1 = malloc(sizeof(float));
-//*data1 = 1.0f;
-//int ndata1 = sizeof(float);
-//TF_Tensor* float_tensor = TF_AllocateTensor(TF_FLOAT, dimsi1, ndimsi1, ndata1);
-////get the data pointer from the tensor
-//float* data1_ptr = (float*)TF_TensorData(float_tensor);
-//data1_ptr[0] = 1.0f;
 static TF_Tensor* new_tensor(TF_DataType dtype, int ndims, int64_t* dims, float* data, int ndata) {
 	TF_Tensor* tensor = TF_AllocateTensor(dtype, dims, ndims, ndata);
 	float* data_ptr = (float*)TF_TensorData(tensor);
