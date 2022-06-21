@@ -136,6 +136,9 @@
     <ClCompile Include="Brains.c" />
     <ClCompile Include="Model.c" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Brains.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
